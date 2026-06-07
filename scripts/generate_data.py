@@ -9,6 +9,8 @@ Generates:
 - 100 Courses
 - 10,000 Attendance Records
 - 5,000 Exam Records
+- 2,000 Timetable Records
+- 3,000 Assignment Records
 
 Usage:
     python generate_data.py
@@ -19,6 +21,8 @@ Output:
     data/synthetic/courses.json
     data/synthetic/attendance.json
     data/synthetic/exams.json
+    data/synthetic/timetable.json
+    data/synthetic/assignments.json
 
 Author: AI Team 1 - Data Engineer
 """
@@ -46,8 +50,10 @@ NUM_FACULTY = 100
 NUM_COURSES = 100
 NUM_ATTENDANCE_RECORDS = 10000
 NUM_EXAM_RECORDS = 5000
+NUM_TIMETABLE_RECORDS = 2000
+NUM_ASSIGNMENT_RECORDS = 3000
 
-OUTPUT_DIR = os.path.join(os.path.dirname(__file__), "..", "data", "synthetic")
+OUTPUT_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "data", "synthetic")
 
 DEPARTMENTS = [
     "Computer Science",
@@ -103,29 +109,21 @@ LAST_NAMES = [
 
 
 def generate_name():
-    """Generate a random Pakistani name."""
     if USE_FAKER:
         return fake.name()
     gender = random.choice(["M", "F"])
-    if gender == "M":
-        first = random.choice(FIRST_NAMES_MALE)
-    else:
-        first = random.choice(FIRST_NAMES_FEMALE)
+    first = random.choice(FIRST_NAMES_MALE if gender == "M" else FIRST_NAMES_FEMALE)
     last = random.choice(LAST_NAMES)
     return f"{first} {last}"
 
 
 def generate_email(name, domain="technify.edu.pk"):
-    """Generate email from name."""
     clean = name.lower().replace(" ", ".").replace("'", "")
     rand_num = random.randint(1, 999)
     return f"{clean}{rand_num}@{domain}"
 
 
 def generate_phone():
-    """Generate a Pakistani phone number."""
-    if USE_FAKER:
-        return f"+92-3{random.randint(0,4)}{random.randint(0,9)}-{random.randint(1000000, 9999999)}"
     return f"+92-3{random.randint(0,4)}{random.randint(0,9)}-{random.randint(1000000, 9999999)}"
 
 
@@ -148,7 +146,7 @@ def generate_students():
             "section": random.choice(["A", "B", "C"]),
             "cgpa": round(random.uniform(2.0, 4.0), 2),
             "enrollment_year": 2026 - (semester // 2) - 1,
-            "status": random.choice(["Active"] * 9 + ["On Leave"]),  # 90% active
+            "status": random.choice(["Active"] * 9 + ["On Leave"]),
             "fee_status": random.choice(["Paid", "Paid", "Paid", "Pending", "Overdue"]),
             "fee_amount": random.choice([85000, 90000, 95000, 100000, 120000]),
             "fee_due_date": f"2026-07-{random.randint(1,28):02d}",
@@ -185,17 +183,15 @@ def generate_courses(faculty_list):
     print(f"[COURSES] Generating {NUM_COURSES} courses...")
     courses = []
     used_names = set()
-    
+
     for i in range(1, NUM_COURSES + 1):
-        # Pick a unique course name
         course_name = random.choice(COURSE_NAMES)
         while course_name in used_names and len(used_names) < len(COURSE_NAMES):
             course_name = random.choice(COURSE_NAMES)
         used_names.add(course_name)
-        
-        # Assign a random faculty member
+
         assigned_faculty = random.choice(faculty_list)
-        
+
         courses.append({
             "course_id": f"CRS-{i:04d}",
             "course_name": course_name,
@@ -229,22 +225,17 @@ def generate_courses(faculty_list):
 def generate_attendance(students, courses):
     print(f"[ATTENDANCE] Generating {NUM_ATTENDANCE_RECORDS} attendance records...")
     attendance = []
-    
-    # Generate dates for the semester (Jan 2026 - May 2026)
     start_date = datetime(2026, 1, 15)
-    
+
     for i in range(1, NUM_ATTENDANCE_RECORDS + 1):
         student = random.choice(students)
         course = random.choice(courses)
-        
-        # Random date within semester
         days_offset = random.randint(0, 120)
         record_date = start_date + timedelta(days=days_offset)
-        
-        # Skip weekends
+
         while record_date.weekday() >= 5:
             record_date += timedelta(days=1)
-        
+
         attendance.append({
             "record_id": f"ATT-{i:06d}",
             "student_id": student["student_id"],
@@ -254,12 +245,12 @@ def generate_attendance(students, courses):
             "date": record_date.strftime("%Y-%m-%d"),
             "status": random.choices(
                 ["Present", "Absent", "Late"],
-                weights=[75, 18, 7],  # 75% present, 18% absent, 7% late
+                weights=[75, 18, 7],
                 k=1,
             )[0],
             "marked_by": course["faculty_id"],
         })
-    
+
     return attendance
 
 
@@ -269,7 +260,7 @@ def generate_attendance(students, courses):
 def generate_exams(students, courses):
     print(f"[EXAMS] Generating {NUM_EXAM_RECORDS} exam records...")
     exams = []
-    
+
     exam_types = [
         {"type": "Quiz 1", "total_marks": 10},
         {"type": "Quiz 2", "total_marks": 10},
@@ -279,19 +270,17 @@ def generate_exams(students, courses):
         {"type": "Midterm", "total_marks": 30},
         {"type": "Final", "total_marks": 50},
     ]
-    
+
     for i in range(1, NUM_EXAM_RECORDS + 1):
         student = random.choice(students)
         course = random.choice(courses)
         exam_type = random.choice(exam_types)
         total = exam_type["total_marks"]
-        
-        # Generate marks with a realistic distribution
-        # Most students get 50-90% marks
-        percentage = random.gauss(70, 15)  # mean=70%, std=15%
-        percentage = max(10, min(100, percentage))  # clamp between 10-100%
+
+        percentage = random.gauss(70, 15)
+        percentage = max(10, min(100, percentage))
         marks = round(total * percentage / 100, 1)
-        
+
         exams.append({
             "record_id": f"EXM-{i:06d}",
             "student_id": student["student_id"],
@@ -317,8 +306,86 @@ def generate_exams(students, courses):
             ),
             "date": f"2026-{random.choice(['02','03','04','05'])}-{random.randint(1,28):02d}",
         })
-    
+
     return exams
+
+
+# ============================================================
+# Generate Timetable Records (NEW)
+# ============================================================
+def generate_timetable(students, courses):
+    print(f"[TIMETABLE] Generating {NUM_TIMETABLE_RECORDS} timetable records...")
+    timetable = []
+
+    time_slots = [
+        "08:00-09:30", "09:30-11:00", "11:00-12:30",
+        "13:00-14:30", "14:30-16:00", "16:00-17:30",
+    ]
+    days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"]
+
+    for i in range(1, NUM_TIMETABLE_RECORDS + 1):
+        student = random.choice(students)
+        course = random.choice(courses)
+
+        timetable.append({
+            "timetable_id": f"TT-{i:06d}",
+            "student_id": student["student_id"],
+            "student_name": student["name"],
+            "course_id": course["course_id"],
+            "course_name": course["course_name"],
+            "course_code": course["course_code"],
+            "faculty_name": course["faculty_name"],
+            "day": random.choice(days),
+            "time_slot": random.choice(time_slots),
+            "room": f"Room {random.choice(['LH','CR','Lab'])}-{random.randint(1,20)}",
+            "semester": student["semester"],
+            "section": student["section"],
+        })
+
+    return timetable
+
+
+# ============================================================
+# Generate Assignment Records (NEW)
+# ============================================================
+def generate_assignments(students, courses):
+    print(f"[ASSIGNMENTS] Generating {NUM_ASSIGNMENT_RECORDS} assignment records...")
+    assignments = []
+
+    statuses = ["Submitted", "Submitted", "Submitted", "Pending", "Late", "Missing"]
+
+    for i in range(1, NUM_ASSIGNMENT_RECORDS + 1):
+        student = random.choice(students)
+        course = random.choice(courses)
+        due_date = datetime(2026, 1, 15) + timedelta(days=random.randint(0, 150))
+        status = random.choice(statuses)
+
+        submitted_date = None
+        marks_obtained = None
+
+        if status == "Submitted":
+            submitted_date = (due_date - timedelta(days=random.randint(0, 3))).strftime("%Y-%m-%d")
+            marks_obtained = round(random.uniform(7, 15), 1)
+        elif status == "Late":
+            submitted_date = (due_date + timedelta(days=random.randint(1, 5))).strftime("%Y-%m-%d")
+            marks_obtained = round(random.uniform(3, 10), 1)
+
+        assignments.append({
+            "assignment_id": f"ASN-{i:06d}",
+            "student_id": student["student_id"],
+            "student_name": student["name"],
+            "course_id": course["course_id"],
+            "course_name": course["course_name"],
+            "assignment_title": f"Assignment {random.randint(1,5)} - {course['course_name']}",
+            "total_marks": 15,
+            "marks_obtained": marks_obtained,
+            "due_date": due_date.strftime("%Y-%m-%d"),
+            "submitted_date": submitted_date,
+            "status": status,
+            "faculty_id": course["faculty_id"],
+        })
+
+    return assignments
 
 
 # ============================================================
@@ -328,34 +395,34 @@ def main():
     print("=" * 60)
     print("Technify University - Synthetic Data Generator")
     print("=" * 60)
-    
-    # Create output directory
+
     os.makedirs(OUTPUT_DIR, exist_ok=True)
-    
-    # Generate all data
+
     students = generate_students()
     faculty = generate_faculty()
     courses = generate_courses(faculty)
     attendance = generate_attendance(students, courses)
     exams = generate_exams(students, courses)
-    
-    # Save to JSON files
+    timetable = generate_timetable(students, courses)
+    assignments = generate_assignments(students, courses)
+
     datasets = {
         "students": students,
         "faculty": faculty,
         "courses": courses,
         "attendance": attendance,
         "exams": exams,
+        "timetable": timetable,
+        "assignments": assignments,
     }
-    
+
     print("\nSaving data...")
     for name, data in datasets.items():
         filepath = os.path.join(OUTPUT_DIR, f"{name}.json")
         with open(filepath, "w", encoding="utf-8") as f:
             json.dump(data, f, indent=2, ensure_ascii=False)
         print(f"   [OK] {name}.json ({len(data):,} records)")
-    
-    # Print summary
+
     print("\n" + "=" * 60)
     print("Summary")
     print("=" * 60)
@@ -364,6 +431,8 @@ def main():
     print(f"   Courses:            {len(courses):>8,}")
     print(f"   Attendance Records: {len(attendance):>8,}")
     print(f"   Exam Records:       {len(exams):>8,}")
+    print(f"   Timetable Records:  {len(timetable):>8,}")
+    print(f"   Assignment Records: {len(assignments):>8,}")
     print(f"   Total Records:      {sum(len(d) for d in datasets.values()):>8,}")
     print(f"\n   Output Directory: {os.path.abspath(OUTPUT_DIR)}")
     print("=" * 60)
