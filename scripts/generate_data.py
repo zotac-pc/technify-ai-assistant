@@ -104,8 +104,6 @@ LAST_NAMES = [
 
 def generate_name():
     """Generate a random Pakistani name."""
-    if USE_FAKER:
-        return fake.name()
     gender = random.choice(["M", "F"])
     if gender == "M":
         first = random.choice(FIRST_NAMES_MALE)
@@ -338,6 +336,8 @@ def main():
     courses = generate_courses(faculty)
     attendance = generate_attendance(students, courses)
     exams = generate_exams(students, courses)
+    timetable = generate_timetable(students, courses)
+    assignments = generate_assignments(courses, students)
     
     # Save to JSON files
     datasets = {
@@ -346,6 +346,8 @@ def main():
         "courses": courses,
         "attendance": attendance,
         "exams": exams,
+        "timetable": timetable,
+        "assignments": assignments,
     }
     
     print("\nSaving data...")
@@ -369,6 +371,60 @@ def main():
     print("=" * 60)
     print("Data generation complete!")
 
+# ============================================================
+# Generate Timetable
+# ============================================================
+def generate_timetable(students, courses):
+    print(f"[TIMETABLE] Generating timetable records...")
+    timetable = []
+    for student in students:
+        # Each student has 5-6 courses per semester
+        num_courses = random.randint(5, 6)
+        student_courses = random.sample(courses, num_courses)
+        for course in student_courses:
+            timetable.append({
+                "student_id": student["student_id"],
+                "student_name": student["name"],
+                "course_id": course["course_id"],
+                "course_name": course["course_name"],
+                "course_code": course["course_code"],
+                "faculty_name": course["faculty_name"],
+                "days": course["schedule"]["days"],
+                "time": course["schedule"]["time"],
+                "room": course["schedule"]["room"],
+                "semester": student["semester"],
+            })
+    return timetable
 
+
+# ============================================================
+# Generate Assignments
+# ============================================================
+def generate_assignments(courses, students):
+    print(f"[ASSIGNMENTS] Generating assignment records...")
+    assignments = []
+    record_id = 1
+    for course in courses:
+        # Each course has 3-5 assignments
+        num_assignments = random.randint(3, 5)
+        for a in range(1, num_assignments + 1):
+            due_date = f"2026-{random.choice(['03','04','05'])}-{random.randint(1,28):02d}"
+            # Assign to random students
+            assigned_students = random.sample(students, random.randint(20, 40))
+            for student in assigned_students:
+                assignments.append({
+                    "assignment_id": f"ASN-{record_id:06d}",
+                    "course_id": course["course_id"],
+                    "course_name": course["course_name"],
+                    "student_id": student["student_id"],
+                    "student_name": student["name"],
+                    "title": f"Assignment {a} - {course['course_name']}",
+                    "due_date": due_date,
+                    "status": random.choice(["Submitted", "Submitted", "Pending", "Late"]),
+                    "marks_obtained": random.randint(8, 15),
+                    "total_marks": 15,
+                })
+                record_id += 1
+    return assignments
 if __name__ == "__main__":
     main()
