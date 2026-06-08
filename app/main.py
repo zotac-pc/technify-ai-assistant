@@ -37,8 +37,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Initialize role authorization rules according to project security specifications
+# =========================================================================
+# SYSTEM SECURITY RULES (Defining Access Control for Student, Faculty, & Admin)
+# =========================================================================
 allow_student_and_admin = RoleChecker(["Student", "Admin"])
+allow_only_faculty = RoleChecker(["Faculty"])
 allow_only_admin = RoleChecker(["Admin"])
 
 
@@ -70,9 +73,9 @@ async def health_check():
 
 # ========== Academic & Security Test Endpoints ==========
 
-@app.get("/api/v1/student/attendance", tags=["Academic Info"], dependencies=[Depends(allow_student_and_admin)])
+# 1. Student Route (Accessible by Students and Admins)
+@app.get("/api/v1/student/attendance", tags=["Student Features"], dependencies=[Depends(allow_student_and_admin)])
 async def get_attendance():
-    # Protected route accessible by both Student and Admin roles
     return {
         "course": "Web Engineering (CS-301)",
         "attendance": "78%",
@@ -80,9 +83,23 @@ async def get_attendance():
     }
 
 
+# 2. Faculty Route (Restricted strictly to Faculty members)
+@app.get("/api/v1/faculty/at-risk-students", tags=["Faculty Features"], dependencies=[Depends(allow_only_faculty)])
+async def get_at_risk_students():
+    # Test route to check faculty tracking features
+    return {
+        "department": "Information Technology",
+        "at_risk_count": 4,
+        "students": [
+            {"id": "STU-0091", "name": "Ali", "attendance": "54%", "reason": "Low Attendance"},
+            {"id": "STU-0142", "name": "Sana", "attendance": "62%", "reason": "Ungraded Assignments"}
+        ]
+    }
+
+
+# 3. Admin Route (Restricted exclusively to Admin role)
 @app.get("/api/v1/admin/fee-report", tags=["Admin Reports"], dependencies=[Depends(allow_only_admin)])
 async def get_fee_report():
-    # Restricted route accessible exclusively by Admin role
     return {
         "total_expected": "PKR 425M",
         "collected": "PKR 382.5M",
@@ -108,7 +125,6 @@ async def chat(message: dict):
 
 @app.on_event("startup")
 async def startup_event():
-    # Executed immediately upon server activation
     print("=" * 50)
     print("Technify Academic AI Assistant (TAIA)")
     print("Service is starting...")
