@@ -7,8 +7,9 @@ class RoleChecker:
 
     def __call__(self, user: dict = Depends(verify_user_access)):
         if user["role"] not in self.allowed_roles:
+            # Urdu message ko English se badal diya
             raise HTTPException(
                 status_code=403, 
-                detail="Aapko yeh information dekhne ki ijazat nahi hai!"
+                detail="Access denied. You do not have permission to access this resource!"
             )
         return user

@@ -7,24 +7,27 @@ This is the main entry point for the AI Assistant microservice.
 Run with: uvicorn app.main:app --reload
 """
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 import os
 
-# Load environment variables
+# Import the RoleChecker from our custom authorization module
+from app.auth.rbac import RoleChecker  
+
+# Load environment variables from .env file
 load_dotenv()
 
-# Initialize FastAPI app
+# Initialize FastAPI application
 app = FastAPI(
     title="Technify Academic AI Assistant (TAIA)",
     description="AI-powered academic assistant integrated with Technify University ERP",
     version="0.1.0",
-    docs_url="/docs",          # Swagger UI
-    redoc_url="/redoc",        # ReDoc
+    docs_url="/docs",          # Swagger UI path
+    redoc_url="/redoc",        # ReDoc path
 )
 
-# CORS Middleware (allow ERP frontend to call our API)
+# CORS Middleware configuration to allow the ERP frontend to make requests
 cors_origins = os.getenv("CORS_ORIGINS", "http://localhost:3000").split(",")
 app.add_middleware(
     CORSMiddleware,
@@ -34,11 +37,16 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Initialize role authorization rules according to project security specifications
+allow_student_and_admin = RoleChecker(["Student", "Admin"])
+allow_only_admin = RoleChecker(["Admin"])
 
-# ========== Health Check Endpoint ==========
+
+# ========== Health Check Endpoints ==========
+
 @app.get("/", tags=["Health"])
 async def root():
-    """Root endpoint - confirms the service is running."""
+    # Verify if the application service gateway is up and running
     return {
         "service": "Technify Academic AI Assistant (TAIA)",
         "status": "running",
@@ -48,7 +56,7 @@ async def root():
 
 @app.get("/health", tags=["Health"])
 async def health_check():
-    """Health check endpoint for monitoring."""
+    # System health status monitoring endpoint
     return {
         "status": "healthy",
         "components": {
@@ -60,18 +68,33 @@ async def health_check():
     }
 
 
-# ========== Chat Endpoint (Placeholder) ==========
+# ========== Academic & Security Test Endpoints ==========
+
+@app.get("/api/v1/student/attendance", tags=["Academic Info"], dependencies=[Depends(allow_student_and_admin)])
+async def get_attendance():
+    # Protected route accessible by both Student and Admin roles
+    return {
+        "course": "Web Engineering (CS-301)",
+        "attendance": "78%",
+        "classes_attended": "25 out of 32"
+    }
+
+
+@app.get("/api/v1/admin/fee-report", tags=["Admin Reports"], dependencies=[Depends(allow_only_admin)])
+async def get_fee_report():
+    # Restricted route accessible exclusively by Admin role
+    return {
+        "total_expected": "PKR 425M",
+        "collected": "PKR 382.5M",
+        "percentage": "90%"
+    }
+
+
+# ========== Chat Endpoint ==========
+
 @app.post("/api/v1/chat", tags=["Chat"])
 async def chat(message: dict):
-    """
-    Main chat endpoint - receives user messages and returns AI responses.
-    
-    TODO (Week 2-3):
-    - Add JWT authentication middleware
-    - Add role-based access control
-    - Connect to LangChain pipeline
-    - Add audit logging
-    """
+    # Chat engine placeholder to receive user messages
     user_message = message.get("message", "")
     
     return {
@@ -81,10 +104,11 @@ async def chat(message: dict):
     }
 
 
-# ========== Startup Event ==========
+# ========== Application Startup Event ==========
+
 @app.on_event("startup")
 async def startup_event():
-    """Runs when the server starts."""
+    # Executed immediately upon server activation
     print("=" * 50)
     print("Technify Academic AI Assistant (TAIA)")
     print("Service is starting...")
