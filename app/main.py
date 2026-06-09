@@ -107,17 +107,27 @@ async def get_fee_report():
     }
 
 
+from app.chains.chatbot_chain import generate_chat_response
+from fastapi import Request
+
 # ========== Chat Endpoint ==========
 
 @app.post("/api/v1/chat", tags=["Chat"])
-async def chat(message: dict):
-    # Chat engine placeholder to receive user messages
+async def chat(request: Request, message: dict):
+    # Extract session ID from headers or use default
+    session_id = request.headers.get("x-session-id", "default_session")
     user_message = message.get("message", "")
     
+    if not user_message:
+        return {"response": "Please provide a message."}
+
+    # Call LangChain pipeline
+    ai_response = await generate_chat_response(session_id, user_message)
+
     return {
-        "response": f"AI Assistant is under development. You said: '{user_message}'",
-        "status": "placeholder",
-        "note": "This endpoint will be connected to LangChain in Week 2-3.",
+        "response": ai_response,
+        "status": "success",
+        "note": "Powered by LangChain ConversationBufferMemory"
     }
 
 
