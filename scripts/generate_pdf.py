@@ -3,20 +3,22 @@ from fpdf import FPDF
 import os
 
 GITHUB = "https://github.com/zotac-pc/technify-ai-assistant"
-OUT = os.path.join(os.path.dirname(__file__), "..", "docs", "TAIA_Team_Document.pdf")
+OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "docs", "TAIA_Team_Document.pdf")
 
 class PDF(FPDF):
     def header(self):
         if self.page_no() > 1:
             self.set_font("Helvetica", "I", 8)
-            self.set_text_color(100,100,100)
+            self.set_text_color(100, 100, 100)
             self.cell(0, 8, "Technify Academic AI Assistant (TAIA) - AI Team 1", align="C")
             self.ln(10)
+
     def footer(self):
         self.set_y(-15)
         self.set_font("Helvetica", "I", 8)
-        self.set_text_color(128,128,128)
+        self.set_text_color(128, 128, 128)
         self.cell(0, 10, f"Page {self.page_no()}/{{nb}}", align="C")
+
     def section_title(self, t):
         self.set_font("Helvetica", "B", 16)
         self.set_text_color(0, 90, 180)
@@ -25,20 +27,24 @@ class PDF(FPDF):
         self.line(10, self.get_y(), 200, self.get_y())
         self.ln(4)
         self.set_x(10)
+
     def sub_title(self, t):
         self.set_font("Helvetica", "B", 13)
         self.set_text_color(40, 40, 40)
         self.cell(0, 10, t, new_x="LMARGIN", new_y="NEXT")
+
     def body(self, t):
         self.set_font("Helvetica", "", 10)
         self.set_text_color(30, 30, 30)
         self.multi_cell(0, 5.5, t)
         self.ln(2)
+
     def bullet(self, t):
         self.set_font("Helvetica", "", 10)
-        self.set_text_color(30,30,30)
+        self.set_text_color(30, 30, 30)
         self.set_x(10)
         self.multi_cell(190, 5.5, "   - " + t)
+
     def table_row(self, cols, widths, bold=False):
         self.set_font("Helvetica", "B" if bold else "", 9)
         h = 7
@@ -46,11 +52,14 @@ class PDF(FPDF):
             self.cell(widths[i], h, str(c), border=1, align="C" if bold else "L")
         self.ln(h)
 
+
 pdf = PDF()
 pdf.alias_nb_pages()
 pdf.set_auto_page_break(auto=True, margin=20)
 
+# ============================================================
 # COVER PAGE
+# ============================================================
 pdf.add_page()
 pdf.ln(40)
 pdf.set_font("Helvetica", "B", 28)
@@ -64,24 +73,27 @@ pdf.set_draw_color(0, 90, 180)
 pdf.line(60, pdf.get_y(), 150, pdf.get_y())
 pdf.ln(10)
 pdf.set_font("Helvetica", "", 14)
-pdf.set_text_color(60,60,60)
+pdf.set_text_color(60, 60, 60)
 pdf.cell(0, 8, "AI Team 1 - Project Document", align="C", new_x="LMARGIN", new_y="NEXT")
 pdf.cell(0, 8, "Technify Software House", align="C", new_x="LMARGIN", new_y="NEXT")
 pdf.ln(5)
 pdf.set_font("Helvetica", "", 11)
 pdf.cell(0, 8, "Duration: June 7, 2026 - July 31, 2026 (8 Weeks)", align="C", new_x="LMARGIN", new_y="NEXT")
-pdf.cell(0, 8, "Team Size: 6 Members", align="C", new_x="LMARGIN", new_y="NEXT")
+# FIXED: 8 Members
+pdf.cell(0, 8, "Team Size: 8 Members", align="C", new_x="LMARGIN", new_y="NEXT")
 pdf.ln(15)
 pdf.set_font("Helvetica", "B", 11)
 pdf.set_text_color(0, 90, 180)
 pdf.cell(0, 8, f"GitHub: {GITHUB}", align="C", new_x="LMARGIN", new_y="NEXT")
 pdf.ln(30)
 pdf.set_font("Helvetica", "I", 10)
-pdf.set_text_color(120,120,120)
+pdf.set_text_color(120, 120, 120)
 pdf.cell(0, 8, "CONFIDENTIAL - For AI Team 1 Members Only", align="C", new_x="LMARGIN", new_y="NEXT")
 pdf.cell(0, 8, "Document Version 1.0 | June 7, 2026", align="C", new_x="LMARGIN", new_y="NEXT")
 
+# ============================================================
 # TABLE OF CONTENTS
+# ============================================================
 pdf.add_page()
 pdf.section_title("Table of Contents")
 toc = [
@@ -103,9 +115,10 @@ toc = [
 ]
 for item in toc:
     pdf.bullet(item)
-pdf.ln(5)
 
+# ============================================================
 # 1. PROJECT OVERVIEW
+# ============================================================
 pdf.add_page()
 pdf.section_title("1. Project Overview")
 pdf.body("Technify is building a University ERP (Enterprise Resource Planning) system - a complete university management software. Multiple intern teams are working on different parts:")
@@ -125,8 +138,10 @@ pdf.set_text_color(180, 0, 0)
 pdf.multi_cell(0, 6, "The AI Assistant is NOT allowed to access the database directly. All data access must occur through secure ERP APIs.")
 pdf.ln(5)
 
+# ============================================================
 # 2. WHAT WE ARE BUILDING
-pdf.set_text_color(30,30,30)
+# ============================================================
+pdf.set_text_color(30, 30, 30)
 pdf.section_title("2. What We Are Building")
 pdf.body("We are building a smart AI chatbot that sits inside the university ERP system. When a user (student, teacher, or admin) opens the ERP, they can talk to the AI assistant in natural language.")
 pdf.sub_title("Example Conversations")
@@ -138,7 +153,9 @@ pdf.ln(3)
 pdf.multi_cell(0, 5, 'Admin: "What is the fee collection status?"\nAI: "Total Expected: PKR 425M | Collected: PKR 382.5M (90%)"')
 pdf.ln(5)
 
+# ============================================================
 # 3. HOW IT WORKS
+# ============================================================
 pdf.add_page()
 pdf.section_title("3. How It Works - System Flow")
 steps = [
@@ -158,7 +175,9 @@ for s in steps:
     pdf.bullet(s)
 pdf.ln(5)
 
+# ============================================================
 # 4. ARCHITECTURE
+# ============================================================
 pdf.section_title("4. System Architecture")
 pdf.body("Our system follows a microservice architecture. The AI assistant is completely separate from the ERP. The ERP team builds the frontend (React), backend (Laravel), and database (PostgreSQL). We build the AI service (FastAPI + LangChain + ChromaDB).")
 pdf.body("Key components of our AI microservice:")
@@ -177,7 +196,9 @@ for c in components:
 pdf.ln(3)
 pdf.body("Why separate microservice? (1) Independent development - we use Python, ERP uses PHP. (2) Independent deployment. (3) Reusability in other Technify products. (4) Independent scaling.")
 
+# ============================================================
 # 5. TECH STACK
+# ============================================================
 pdf.add_page()
 pdf.section_title("5. Technology Stack")
 w3 = [40, 30, 120]
@@ -197,24 +218,28 @@ for s in stack:
     pdf.table_row(s, w3)
 pdf.ln(5)
 
+# ============================================================
 # 6. THE 5 MODULES
+# ============================================================
 pdf.section_title("6. The 5 Modules We Must Build")
 modules = [
     ("Module 1: User Authentication", "Validate JWT tokens from ERP, check user role and permissions before answering any question. Reject expired or fake tokens."),
     ("Module 2: Academic Info Retrieval", "Call ERP APIs to fetch attendance, results, GPA, timetable, assignments, fee records. Format data for the LLM."),
     ("Module 3: Knowledge Base (RAG)", "Store university policy documents in ChromaDB. When users ask policy questions, retrieve relevant document chunks and generate accurate answers."),
-    ("Module 4: Study Recommendations", "Generate personalized study schedules, recommend courses, suggest learning resources based on student's academic data."),
+    ("Module 4: Study Recommendations", "Generate personalized study schedules, recommend courses, suggest learning resources based on student academic data."),
     ("Module 5: Conversation Management", "Maintain context across multiple messages. Follow-up questions like 'What about Web Engineering?' should work correctly."),
 ]
 for title, desc in modules:
     pdf.sub_title(title)
     pdf.body(desc)
 
+# ============================================================
 # 7. FEATURES BY ROLE
+# ============================================================
 pdf.add_page()
 pdf.section_title("7. Features By User Role")
 pdf.sub_title("Student Features")
-student_features = [
+for f in [
     "Check attendance (overall and per course)",
     "View pending assignments",
     "Check exam schedule",
@@ -223,8 +248,7 @@ student_features = [
     "View registered courses and timetable",
     "Generate study plans",
     "Ask about university policies",
-]
-for f in student_features:
+]:
     pdf.bullet(f)
 pdf.ln(3)
 pdf.sub_title("Faculty Features")
@@ -236,7 +260,9 @@ for f in ["View total enrollment numbers", "Admission statistics", "Fee collecti
     pdf.bullet(f)
 pdf.ln(5)
 
+# ============================================================
 # 8. SECURITY
+# ============================================================
 pdf.section_title("8. Security & Privacy")
 pdf.body("RBAC (Role-Based Access Control): Every request is checked against the user's role. Students see only their own data. Faculty see only their assigned courses. Admins see aggregated statistics.")
 pdf.sub_title("The AI Must NEVER:")
@@ -246,7 +272,9 @@ pdf.ln(3)
 pdf.sub_title("Audit Logging")
 pdf.body("Every request is logged with: UserID, Role, Query, Response Type, Timestamp, Response Time. Logs are stored for compliance and security review.")
 
+# ============================================================
 # 9. PROJECT STRUCTURE
+# ============================================================
 pdf.add_page()
 pdf.section_title("9. Project Folder Structure")
 pdf.set_font("Courier", "", 8)
@@ -260,7 +288,7 @@ structure = """technify-ai-assistant/
 |   |-- prompts/            # Prompt templates
 |   |-- models/             # Data models
 |-- data/
-|   |-- synthetic/          # Generated test data (5 JSON files)
+|   |-- synthetic/          # Generated test data (7 JSON files)
 |   |-- documents/          # University policy documents (7 files)
 |   |-- vector_store/       # ChromaDB storage
 |-- docs/                   # All documentation
@@ -273,68 +301,81 @@ structure = """technify-ai-assistant/
 pdf.multi_cell(0, 4.5, structure)
 pdf.ln(5)
 
+# ============================================================
 # 10. GITHUB
+# ============================================================
 pdf.section_title("10. GitHub Repository")
 pdf.set_font("Helvetica", "B", 12)
 pdf.set_text_color(0, 90, 180)
 pdf.cell(0, 8, GITHUB, new_x="LMARGIN", new_y="NEXT")
-pdf.set_text_color(30,30,30)
+pdf.set_text_color(30, 30, 30)
 pdf.ln(3)
 pdf.sub_title("Git Workflow Rules")
-for f in ["NEVER push directly to 'main' branch", "Create feature branches: feature/jwt-auth, feature/mock-erp, etc.", "Commit frequently with clear messages", "Create Pull Requests for code review", "Team Lead reviews and merges PRs"]:
+for f in [
+    "NEVER push directly to 'main' branch",
+    "Create feature branches: feature/jwt-auth, feature/mock-erp, etc.",
+    "Commit frequently with clear messages",
+    "Create Pull Requests for code review",
+    "Team Lead reviews and merges PRs",
+]:
     pdf.bullet(f)
 pdf.ln(5)
 
+# ============================================================
 # 11. DELIVERABLES
+# ============================================================
 pdf.section_title("11. Deliverables & Success Criteria")
 w4 = [15, 55, 70, 50]
 pdf.table_row(["#", "Deliverable", "Description", "Deadline"], w4, bold=True)
-deliverables = [
+for d in [
     ["1", "Architecture Diagram", "System diagrams & components", "Week 1 (DONE)"],
     ["2", "Prompt Library", "All prompt templates", "Week 2"],
     ["3", "Knowledge Base", "Docs in searchable format", "Week 3"],
     ["4", "Working Prototype", "Web-based chatbot", "Week 5"],
     ["5", "ERP Integration", "API connectors", "Week 5"],
     ["6", "Documentation", "Install, API, User guides", "Week 7"],
-]
-for d in deliverables:
+]:
     pdf.table_row(d, w4)
 pdf.ln(5)
 pdf.sub_title("Success Criteria")
 w5 = [60, 40, 90]
 pdf.table_row(["Criteria", "Target", "How to Test"], w5, bold=True)
-criteria = [
+for c in [
     ["Response Time", "< 3 seconds", "Measure with timer"],
     ["Accuracy", "90%+", "Test 100 questions"],
-    ["Data Leakage", "0%", "Try accessing others' data"],
+    ["Data Leakage", "0%", "Try accessing others data"],
     ["ERP Integration", "Successful", "API calls return correct data"],
     ["Role-Based Security", "Implemented", "Each role sees only their data"],
-]
-for c in criteria:
+]:
     pdf.table_row(c, w5)
 
-# 12. TEAM ROLES
+# ============================================================
+# 12. TEAM ROLES - FIXED: 8 Members
+# ============================================================
 pdf.add_page()
 pdf.section_title("12. Team Roles & Assignments")
 w6 = [10, 55, 125]
 pdf.table_row(["#", "Role", "Responsibilities"], w6, bold=True)
-roles = [
+for r in [
     ["1", "Team Lead + AI Architect", "Architecture, LangChain pipeline, code review, coordination"],
     ["2", "Backend Developer 1", "FastAPI endpoints, JWT auth, API gateway, WebSocket"],
     ["3", "Backend Developer 2", "ERP API connectors, data formatting, audit logging, mock ERP"],
     ["4", "AI/NLP Developer", "LangChain chains, prompt engineering, conversation mgmt"],
     ["5", "KB / RAG Developer", "ChromaDB setup, document ingestion, RAG pipeline, chat UI"],
     ["6", "Data Engineer + QA", "Synthetic data, testing, documentation, quality assurance"],
-]
-for r in roles:
+    ["7", "Frontend Developer", "Chat UI, WebSocket integration, role dashboards"],
+    ["8", "Security + QA", "Penetration testing, RBAC testing, audit logs, performance"],
+]:
     pdf.table_row(r, w6)
 pdf.ln(5)
 
+# ============================================================
 # 13. TIMELINE
+# ============================================================
 pdf.section_title("13. 8-Week Timeline")
 w7 = [25, 60, 105]
 pdf.table_row(["Week", "Phase", "Key Tasks"], w7, bold=True)
-timeline = [
+for t in [
     ["Week 1", "Setup & Architecture", "Git, venv, architecture diagram, research"],
     ["Week 2", "Foundation", "JWT auth, mock ERP, basic LangChain, prompts"],
     ["Week 3", "Core Features", "Student features, ERP connectors, RAG, memory"],
@@ -343,16 +384,17 @@ timeline = [
     ["Week 6", "Security & Testing", "Penetration testing, accuracy, performance"],
     ["Week 7", "Docs & Polish", "Documentation, open-source LLM, cleanup"],
     ["Week 8", "Final Demo", "Integration with real ERP, demo to CEO"],
-]
-for t in timeline:
+]:
     pdf.table_row(t, w7)
 pdf.ln(5)
 
+# ============================================================
 # 14. WEEK 1 TASKS
+# ============================================================
 pdf.add_page()
 pdf.section_title("14. Week 1 Tasks - Detailed (June 7-13)")
 pdf.sub_title("ALL MEMBERS - Day 1 (June 7)")
-day1 = [
+for d in [
     "Read the complete PROJECT_DOCUMENT.md in the docs/ folder",
     "Install Python 3.10+, Git, VS Code",
     "Clone the GitHub repo: git clone " + GITHUB,
@@ -363,8 +405,7 @@ day1 = [
     "Run server: uvicorn app.main:app --reload",
     "Visit http://localhost:8000/docs to verify Swagger UI loads",
     "Run data generator: python scripts/generate_data.py",
-]
-for d in day1:
+]:
     pdf.bullet(d)
 
 pdf.ln(4)
@@ -379,7 +420,7 @@ for t in ["Learn httpx library (async HTTP client)", "Study synthetic data JSON 
 
 pdf.ln(3)
 pdf.sub_title("Member C - AI/NLP Developer")
-for t in ["Learn LangChain (tutorial + docs)", "Practice OpenAI API calls", "Build simple chatbot with ConversationBufferMemory", "Design prompt templates for attendance, results, courses", "DELIVERABLE: Basic LangChain chatbot by June 13"]:
+for t in ["Learn LangChain (tutorial + docs)", "Practice OpenAI API calls", "Build basic_chain.py with conversation memory", "Design prompt templates for attendance, results, courses", "DELIVERABLE: Basic LangChain chatbot by June 13"]:
     pdf.bullet(t)
 
 pdf.add_page()
@@ -389,7 +430,17 @@ for t in ["Learn RAG concepts (YouTube + docs)", "Learn ChromaDB (tutorial + get
 
 pdf.ln(3)
 pdf.sub_title("Member E - Data Engineer + QA")
-for t in ["Validate synthetic data (run generate_data.py)", "Check data quality (unique IDs, correct links)", "Add timetable and assignment data to generator", "Setup pytest framework + conftest.py", "Write 5 basic tests (health endpoint, data files, etc.)", "Create docs/data_dictionary.md", "DELIVERABLE: Enhanced data + test framework by June 13"]:
+for t in ["Validate synthetic data (run generate_data.py)", "Check data quality (unique IDs, correct links)", "Timetable and assignment data already included in generator", "Setup pytest framework + conftest.py", "Write 5 basic tests (health endpoint, data files, etc.)", "Create docs/data_dictionary.md", "DELIVERABLE: Enhanced data + test framework by June 13"]:
+    pdf.bullet(t)
+
+pdf.ln(3)
+pdf.sub_title("Member F - Frontend Developer")
+for t in ["Learn WebSocket basics", "Build basic chat UI (HTML/CSS/JS)", "Design 3 role dashboards (Student, Faculty, Admin)", "DELIVERABLE: Basic chat interface by June 13"]:
+    pdf.bullet(t)
+
+pdf.ln(3)
+pdf.sub_title("Member G - Security + QA")
+for t in ["Study OWASP JWT security guidelines", "Create docs/security_checklist.md", "Design RBAC test cases for all 3 roles", "DELIVERABLE: Security checklist ready by June 13"]:
     pdf.bullet(t)
 
 pdf.ln(3)
@@ -397,7 +448,9 @@ pdf.sub_title("Team Lead Tasks")
 for t in ["Initialize GitHub repo + push code (DONE)", "Create architecture diagram (DONE - docs/architecture.md)", "Design API endpoints (DONE - docs/api_guide.md)", "Coordinate with Web/Backend team leads", "Set up daily standup meetings", "Weekly review meeting on Friday June 13"]:
     pdf.bullet(t)
 
+# ============================================================
 # 15. SETUP
+# ============================================================
 pdf.ln(5)
 pdf.section_title("15. Quick Setup Guide")
 pdf.set_font("Courier", "", 9)
@@ -427,7 +480,9 @@ uvicorn app.main:app --reload
 # http://localhost:8000/docs"""
 pdf.multi_cell(0, 4.5, setup)
 
+# ============================================================
 # FINAL PAGE
+# ============================================================
 pdf.add_page()
 pdf.ln(30)
 pdf.set_font("Helvetica", "B", 20)
@@ -444,7 +499,7 @@ pdf.set_text_color(0, 90, 180)
 pdf.cell(0, 8, f"GitHub: {GITHUB}", align="C", new_x="LMARGIN", new_y="NEXT")
 pdf.ln(20)
 pdf.set_font("Helvetica", "I", 10)
-pdf.set_text_color(128,128,128)
+pdf.set_text_color(128, 128, 128)
 pdf.cell(0, 8, "This document is confidential.", align="C", new_x="LMARGIN", new_y="NEXT")
 pdf.cell(0, 8, "For AI Team 1 members only.", align="C", new_x="LMARGIN", new_y="NEXT")
 
