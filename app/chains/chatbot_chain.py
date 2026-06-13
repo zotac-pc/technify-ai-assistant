@@ -43,3 +43,45 @@ async def generate_chat_response(session_id: str, user_message: str) -> str:
     except Exception as e:
         print(f"LangChain Error: {e}")
         return f"I'm sorry, I encountered an error connecting to my AI brain. (Error: {e})"
+
+from app.prompts.templates import ATTENDANCE_PROMPT, RESULTS_PROMPT, COURSE_PROMPT
+
+def classify_intent(message: str, role: str = 'Student') -> str:
+    msg = message.lower()
+    # Student intents
+    if any(w in msg for w in ['attendance','absent','present']): return 'attendance'
+    if any(w in msg for w in ['result','marks','grade','gpa','cgpa']): return 'results'
+    if any(w in msg for w in ['course','registered','enrolled']): return 'courses'
+    if any(w in msg for w in ['timetable','schedule','class time']): return 'timetable'
+    if any(w in msg for w in ['fee','dues','payment','tuition']): return 'fees'
+    if any(w in msg for w in ['assignment','homework','pending','due']): return 'assignments'
+    if any(w in msg for w in ['study plan','prepare','how to study','weak']): return 'study_plan'
+    if any(w in msg for w in ['exam','test','quiz','when is']): return 'exams'
+    if any(w in msg for w in ['policy','rule','regulation','calendar']): return 'policy'
+    
+    # Faculty intents
+    if role == 'Faculty':
+        if any(w in msg for w in ['low attendance','absent']): return 'faculty_attendance'
+        if any(w in msg for w in ['ungraded','not graded']): return 'faculty_ungraded'
+        if any(w in msg for w in ['at risk','failing','weak']): return 'faculty_at_risk'
+        if any(w in msg for w in ['performance','stats']): return 'faculty_stats'
+        
+    # Admin intents
+    if role == 'Admin':
+        if any(w in msg for w in ['total student','enrollment']): return 'admin_students'
+        if any(w in msg for w in ['admission','intake']): return 'admin_admissions'
+        if any(w in msg for w in ['fee','collection','revenue']): return 'admin_fees'
+        if any(w in msg for w in ['department','performance']): return 'admin_departments'
+        
+    return 'general'
+
+async def generate_contextual_response(sid, msg, data, intent):
+    if intent == 'attendance':
+        prompt = ATTENDANCE_PROMPT.format(student_id=sid, attendance_data=data, question=msg)
+    elif intent == 'results':
+        prompt = RESULTS_PROMPT.format(student_id=sid, results_data=data, question=msg)
+    elif intent in ('courses','timetable'):
+        prompt = COURSE_PROMPT.format(student_id=sid, course_data=data, question=msg)
+    else:
+        prompt = f'Data: {data}\nQuestion: {msg}'
+    return await generate_chat_response(sid, prompt)
