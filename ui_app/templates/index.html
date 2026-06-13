@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>TAIA</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+
+<body>
+    <div id="chat-container">
+
+        <div id="header">
+            <h2>TAIA - Technify AI Assistant</h2>
+        </div>
+
+        <div class="login-bar">
+            <select id="role">
+                <option value="Student">Student</option>
+                <option value="Faculty">Faculty</option>
+                <option value="Admin">Admin</option>
+            </select>
+
+            <input
+                type="text"
+                id="user_id"
+                placeholder="ID (e.g. STU-0001)"
+            >
+        </div>
+
+        <div id="chat-box"></div>
+
+        <div class="input-bar">
+            <input
+                type="text"
+                id="message"
+                placeholder="Ask TAIA..."
+                onkeypress="if(event.key==='Enter')sendMessage()"
+            >
+
+            <button onclick="sendMessage()">
+                Send
+            </button>
+        </div>
+
+    </div>
+
+    <script src="/static/chat.js"></script>
+</body>
+</html>
