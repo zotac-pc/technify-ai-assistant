@@ -109,10 +109,8 @@ LAST_NAMES = [
 
 
 def generate_name():
-    """Generate a random Pakistani name."""
     if USE_FAKER:
         return fake.name()
-
     gender = random.choice(["M", "F"])
     first = random.choice(FIRST_NAMES_MALE if gender == "M" else FIRST_NAMES_FEMALE)
     last = random.choice(LAST_NAMES)
@@ -407,6 +405,7 @@ def main():
     exams = generate_exams(students, courses)
     timetable = generate_timetable(students, courses)
     assignments = generate_assignments(students, courses)
+
     datasets = {
         "students": students,
         "faculty": faculty,
