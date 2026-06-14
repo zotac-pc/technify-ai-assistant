@@ -107,28 +107,62 @@ async def get_fee_report():
     }
 
 
-from app.chains.chatbot_chain import generate_chat_response
+from app.chains.chatbot_chain import (
+    generate_chat_response, generate_contextual_response, classify_intent)
+from app.services.erp_connector import *
+from app.services.study_planner import generate_study_plan
+from app.services.knowledge_base import query_knowledge_base
+from app.services.audit_logger import log_request
 from fastapi import Request
+import json, time
 
 # ========== Chat Endpoint ==========
 
-@app.post("/api/v1/chat", tags=["Chat"])
+@app.post('/api/v1/chat', tags=['Chat'])
 async def chat(request: Request, message: dict):
-    # Extract session ID from headers or use default
-    session_id = request.headers.get("x-session-id", "default_session")
-    user_message = message.get("message", "")
-    
-    if not user_message:
-        return {"response": "Please provide a message."}
-
-    # Call LangChain pipeline
-    ai_response = await generate_chat_response(session_id, user_message)
-
-    return {
-        "response": ai_response,
-        "status": "success",
-        "note": "Powered by LangChain ConversationBufferMemory"
-    }
+    uid      = request.headers.get('x-user-id', 'STU-0001')
+    role     = request.headers.get('x-user-role', 'Student')
+    session  = request.headers.get('x-session-id', uid)
+    user_msg = message.get('message', '')
+    if not user_msg: return {'response': 'Please provide a message.'}
+    start    = time.time()
+    intent   = classify_intent(user_msg, role)
+    erp_data = ''
+    try:
+        # ■■ Student intents ■■
+        if   intent == 'attendance' : erp_data = json.dumps(await get_student_attendance(uid))
+        elif intent == 'results'    : erp_data = json.dumps(await get_student_results(uid))
+        elif intent == 'fees'       : erp_data = json.dumps(await get_student_fees(uid))
+        elif intent == 'courses'    : erp_data = json.dumps(await get_student_courses(uid))
+        elif intent == 'timetable'  : erp_data = json.dumps(await get_student_timetable(uid))
+        elif intent == 'assignments': erp_data = json.dumps(await get_student_assignments(uid))
+        elif intent == 'exams'      : erp_data = json.dumps(await get_student_results(uid))
+        elif intent == 'study_plan' :
+            results = await get_student_results(uid)
+            return {'response': generate_study_plan(results), 'intent': intent}
+        elif intent == 'policy'     : erp_data = query_knowledge_base(user_msg)
+        
+        # ■■ Faculty intents ■■
+        elif intent == 'faculty_attendance': erp_data = json.dumps(await get_faculty_courses(uid))
+        elif intent == 'faculty_ungraded'  : erp_data = json.dumps(await get_faculty_assignments(uid))
+        elif intent == 'faculty_at_risk'   : erp_data = json.dumps(await get_faculty_courses(uid))
+        
+        # ■■ Admin intents — use actual erp_connector function names ■■
+        elif intent == 'admin_students'   : erp_data = json.dumps(await get_admin_student_stats())
+        elif intent == 'admin_admissions' : erp_data = json.dumps(await get_admin_admission_stats())
+        elif intent == 'admin_fees'       : erp_data = json.dumps(await get_admin_fee_stats())
+        elif intent == 'admin_departments': erp_data = json.dumps(await get_admin_department_stats())
+    except Exception as e:
+        erp_data = f'Error: {e}'
+        
+    if erp_data:
+        ai = await generate_contextual_response(session, user_msg, erp_data, intent)
+    else:
+        ai = await generate_chat_response(session, user_msg)
+        
+    elapsed = round(time.time() - start, 2)
+    log_request(uid, role, user_msg, intent, elapsed)
+    return {'response': ai, 'intent': intent, 'time': f'{elapsed}s'}
 
 
 # ========== Application Startup Event ==========
