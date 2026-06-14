@@ -28,7 +28,7 @@ app = FastAPI(
 )
 
 # CORS Middleware configuration to allow the ERP frontend to make requests
-cors_origins = os.getenv("CORS_ORIGINS", "http://localhost:3000").split(",")
+cors_origins = os.getenv("CORS_ORIGINS", "http://localhost:3000,http://localhost:5000,http://localhost:8080").split(",")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=cors_origins,
