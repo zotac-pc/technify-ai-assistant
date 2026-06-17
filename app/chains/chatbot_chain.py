@@ -2,7 +2,7 @@ import os
 from langchain_openai import ChatOpenAI
 from langchain_core.messages import SystemMessage, HumanMessage, AIMessage
 from app.prompts.templates import SYSTEM_PERSONA
-from app.config import get_settings  # Humne yahan centralized settings import ki hain
+from app.config import get_settings # <-- Humne config ko yahan import kar liya hai
 
 # Store memories in memory by session_id
 _memories = {}
@@ -11,7 +11,9 @@ def get_chatbot_chain(session_id: str):
     """Build a conversational model."""
     settings = get_settings()
     
-    # Initialize the LLM (Using Groq via our centralized config)
+    # Ab yeh file hamari hardcode ki hui config settings uthayegi
+    settings = get_settings()
+    
     api_key = settings.LLM_API_KEY
     base_url = settings.LLM_BASE_URL
     model_name = settings.LLM_MODEL
@@ -27,6 +29,8 @@ def get_chatbot_chain(session_id: str):
         temperature=0.3
     )
     return llm
+
+# --- ISKE NEECHAY WALA CODE (generate_chat_response waghera) WAISE HI REHNE DEIN ---
 
 async def generate_chat_response(session_id: str, user_message: str) -> str:
     """Entry point to invoke the chain with the user message."""
