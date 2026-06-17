@@ -2,21 +2,23 @@ import os
 from langchain_openai import ChatOpenAI
 from langchain_core.messages import SystemMessage, HumanMessage, AIMessage
 from app.prompts.templates import SYSTEM_PERSONA
+from app.config import get_settings  # Humne yahan centralized settings import ki hain
 
 # Store memories in memory by session_id
 _memories = {}
 
 def get_chatbot_chain(session_id: str):
     """Build a conversational model."""
+    settings = get_settings()
     
-    # Initialize the LLM (Using OpenRouter/OpenAI via config)
-    api_key = os.getenv("LLM_API_KEY", "sk-placeholder")
-    base_url = os.getenv("LLM_BASE_URL", "https://openrouter.ai/api/v1")
-    model_name = os.getenv("LLM_MODEL", "meta-llama/llama-3.2-3b-instruct:free")
+    # Initialize the LLM (Using Groq via our centralized config)
+    api_key = settings.LLM_API_KEY
+    base_url = settings.LLM_BASE_URL
+    model_name = settings.LLM_MODEL
     
     # Fallback to a valid key format to avoid validation errors if missing
     if not api_key or len(api_key) < 5:
-        api_key = "sk-placeholder-key-for-langchain"
+        api_key = "gsk-placeholder-key-for-langchain"
 
     llm = ChatOpenAI(
         api_key=api_key,
