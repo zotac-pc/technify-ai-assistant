@@ -7,13 +7,17 @@ This is the main entry point for the AI Assistant microservice.
 Run with: uvicorn app.main:app --reload
 """
 
-from fastapi import FastAPI, Depends
+from fastapi import FastAPI, Depends, Request
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 import os
+import json
+import time
 
 # Import the RoleChecker from our custom authorization module
 from app.auth.rbac import RoleChecker  
+# Import our new JWT handler
+from app.auth.jwt_handler import verify_user_access
 
 # Load environment variables from .env file
 load_dotenv()
@@ -113,21 +117,22 @@ from app.services.erp_connector import *
 from app.services.study_planner import generate_study_plan
 from app.services.knowledge_base import query_knowledge_base
 from app.services.audit_logger import log_request
-from fastapi import Request
-import json, time
 
 # ========== Chat Endpoint ==========
 
 @app.post('/api/v1/chat', tags=['Chat'])
-async def chat(request: Request, message: dict):
-    uid      = request.headers.get('x-user-id', 'STU-0001')
-    role     = request.headers.get('x-user-role', 'Student')
+async def chat(request: Request, message: dict, user_data: dict = Depends(verify_user_access)):
+    # Extract user information from the validated token/headers
+    uid      = user_data.get('user_id', 'STU-0001')
+    role     = user_data.get('role', 'Student')
     session  = request.headers.get('x-session-id', uid)
     user_msg = message.get('message', '')
+    
     if not user_msg: return {'response': 'Please provide a message.'}
     start    = time.time()
     intent   = classify_intent(user_msg, role)
     erp_data = ''
+    
     try:
         # ■■ Student intents ■■
         if   intent == 'attendance' : erp_data = json.dumps(await get_student_attendance(uid))
