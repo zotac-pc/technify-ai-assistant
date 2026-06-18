@@ -12,7 +12,10 @@ storage so the app never crashes.
 import os
 from langchain_openai import ChatOpenAI
 from langchain_core.messages import SystemMessage, HumanMessage, AIMessage
+
+from app.config import get_settings
 from app.prompts.templates import SYSTEM_PERSONA, ATTENDANCE_PROMPT, RESULTS_PROMPT, COURSE_PROMPT
+
 
 
 # ── Step 1: Try to connect to Redis. Fall back to in-memory if unavailable. ──
@@ -79,17 +82,18 @@ def _save_to_history(session_id: str, human_msg: str, ai_msg: str, redis_history
             _memories[session_id].append(AIMessage(content=ai_msg))
 
 
+
 # ── Step 4: Build the LLM model ───────────────────────────────────────────────
 
 def get_chatbot_chain(session_id: str):
     """
-    Create and return the ChatOpenAI LLM instance.
-    session_id is accepted for interface compatibility but not used here
-    (history management is handled separately).
+    Create and return the ChatOpenAI LLM instance using central config.
     """
-    api_key   = os.getenv("LLM_API_KEY", "sk-placeholder")
-    base_url  = os.getenv("LLM_BASE_URL", "https://openrouter.ai/api/v1")
-    model_name = os.getenv("LLM_MODEL", "openrouter/free")
+    settings = get_settings()
+    
+    api_key = settings.LLM_API_KEY
+    base_url = settings.LLM_BASE_URL
+    model_name = settings.LLM_MODEL
 
     # Guard: LangChain requires a non-empty key string
     if not api_key or len(api_key) < 5:
@@ -104,6 +108,8 @@ def get_chatbot_chain(session_id: str):
 
 
 # ── Step 5: Main chat entry point ─────────────────────────────────────────────
+
+# --- ISKE NEECHAY WALA CODE (generate_chat_response waghera) WAISE HI REHNE DEIN ---
 
 async def generate_chat_response(session_id: str, user_message: str) -> str:
     """
@@ -205,5 +211,4 @@ async def generate_contextual_response(sid: str, msg: str, data: str, intent: st
             student_id=sid, course_data=data, question=msg)
     else:
         prompt = f'Data: {data}\nQuestion: {msg}'
-
     return await generate_chat_response(sid, prompt)
