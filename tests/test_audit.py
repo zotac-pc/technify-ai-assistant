@@ -1,18 +1,13 @@
-import requests, time
+import importlib
 
-# Send chat request
-requests.post(
-    'http://localhost:8000/api/v1/chat',
-    json={'message': 'What is my attendance?'},
-    headers={'x-user-role': 'Student', 'x-user-id': 'STU-0001'}
-)
 
-time.sleep(1)
+def test_audit_logger_creates_sqlite_parent_directory(tmp_path, monkeypatch):
+    db_file = tmp_path / "nested" / "audit.db"
+    monkeypatch.setenv("DATABASE_URL", f"sqlite:///{db_file.as_posix()}")
 
-# Check audit logs
-r = requests.get('http://localhost:8000/api/v1/admin/audit-logs')
-print(r.json())
+    import app.services.audit_logger as audit_logger
 
-# Check usage stats
-r2 = requests.get('http://localhost:8000/api/v1/admin/usage-stats')
-print(r2.json())
+    importlib.reload(audit_logger)
+
+    assert db_file.parent.exists()
+    assert db_file.exists()

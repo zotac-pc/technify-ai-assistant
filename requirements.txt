@@ -43,3 +43,13 @@ python-multipart>=0.0.18
 
 # DATABASE DEPENDENCIES
 sqlalchemy>=2.0.0
+
+# Frontend
+flask>=3.0.0
+
+# LangChain Chroma integration
+langchain-chroma>=0.1.0
+
+# Embeddings support (prevents runtime failures)
+sentence-transformers>=3.0.0
+tiktoken>=0.7.0
