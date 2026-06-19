@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TAIA | Admin Dashboard</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        .dashboard-area {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            background-color: var(--bg-primary);
+            padding: 2rem;
+            overflow-y: auto;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        .stat-card {
+            background-color: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+        }
+        .stat-card h3 {
+            font-size: 0.9rem;
+            color: #888;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+        .stat-card p {
+            font-size: 2rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        .table-container {
+            background-color: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+        }
+        th, td {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        th {
+            background-color: rgba(255, 255, 255, 0.02);
+            font-weight: 500;
+            color: #aaa;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        tr:last-child td {
+            border-bottom: none;
+        }
+        .refresh-btn {
+            background-color: var(--accent-primary);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-family: inherit;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        .refresh-btn:hover {
+            background-color: var(--accent-hover);
+        }
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2>TAIA</h2>
+                <span class="badge" style="background-color: #ef4444;">Admin</span>
+            </div>
+            
+            <div class="auth-section">
+                <h3>Authentication</h3>
+                <input type="text" id="tokenInput" placeholder="Paste Admin JWT Here..." />
+                <button onclick="saveToken()" class="btn-primary">Save Token</button>
+            </div>
+            
+            <div class="fallback-auth">
+                <p>Or use Dev Fallback:</p>
+                <select id="roleSelect">
+                    <option value="Admin" selected>Admin</option>
+                </select>
+                <input type="text" id="userIdInput" value="ADM-0001">
+            </div>
+            
+            <div class="quick-actions">
+                <a href="/" style="text-decoration: none;">
+                    <button class="quick-btn">💬 Back to Chat</button>
+                </a>
+            </div>
+        </aside>
+
+        <!-- Main Dashboard Area -->
+        <main class="dashboard-area">
+            <div class="dashboard-header">
+                <div>
+                    <h1>Audit Logs Dashboard</h1>
+                    <p style="color: #888; margin-top: 0.5rem;">View system queries and latency metrics</p>
+                </div>
+                <button class="refresh-btn" onclick="fetchLogs()">🔄 Refresh Logs</button>
+            </div>
+            
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h3>Total Queries (Limit 50)</h3>
+                    <p id="totalQueries">-</p>
+                </div>
+                <div class="stat-card">
+                    <h3>Avg Latency (s)</h3>
+                    <p id="avgLatency">-</p>
+                </div>
+            </div>
+
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Timestamp</th>
+                            <th>User ID</th>
+                            <th>Role</th>
+                            <th>Intent</th>
+                            <th>Latency</th>
+                        </tr>
+                    </thead>
+                    <tbody id="logsTableBody">
+                        <tr>
+                            <td colspan="6" style="text-align: center; color: #888;">Click 'Refresh Logs' to load data</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+    <script src="/static/admin.js"></script>
+</body>
+</html>

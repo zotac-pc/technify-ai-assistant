@@ -7,6 +7,7 @@ This is the main entry point for the AI Assistant microservice.
 Run with: uvicorn app.main:app --reload
 """
 
+from contextlib import asynccontextmanager
 from fastapi import FastAPI, Depends, Request
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
@@ -22,13 +23,23 @@ from app.auth.jwt_handler import verify_user_access
 # Load environment variables from .env file
 load_dotenv()
 
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    print("=" * 50)
+    print("Technify Academic AI Assistant (TAIA)")
+    print("Service is starting...")
+    print(f"Docs available at: http://localhost:{os.getenv('APP_PORT', 8000)}/docs")
+    print("=" * 50)
+    yield
+
 # Initialize FastAPI application
 app = FastAPI(
     title="Technify Academic AI Assistant (TAIA)",
     description="AI-powered academic assistant integrated with Technify University ERP",
     version="0.1.0",
     docs_url="/docs",          # Swagger UI path
-    redoc_url="/redoc",        # ReDoc path
+    redoc_url="/redoc",        # ReDoc path,
+    lifespan=lifespan,
 )
 
 # CORS Middleware configuration to allow the ERP frontend to make requests
@@ -170,16 +181,19 @@ async def chat(request: Request, message: dict, user_data: dict = Depends(verify
     return {'response': ai, 'intent': intent, 'time': f'{elapsed}s'}
 
 
-# ========== Application Startup Event ==========
+# ========== Audit Logs & Usage Stats Endpoints ==========
 
-@app.on_event("startup")
-async def startup_event():
-    print("=" * 50)
-    print("Technify Academic AI Assistant (TAIA)")
-    print("Service is starting...")
-    print(f"Docs available at: http://localhost:{os.getenv('APP_PORT', 8000)}/docs")
-    print("=" * 50)
+from app.services.audit_logger import get_recent_logs, get_stats as get_audit_stats
 
+@app.get('/api/v1/admin/audit-logs', tags=['Admin Reports'], dependencies=[Depends(allow_only_admin)])
+async def audit_logs(limit: int = 50):
+    """Return recent audit log entries from the database."""
+    return get_recent_logs(limit=limit)
+
+@app.get('/api/v1/admin/usage-stats', tags=['Admin Reports'], dependencies=[Depends(allow_only_admin)])
+async def usage_stats():
+    """Return overall usage statistics."""
+    return get_audit_stats()
 
 if __name__ == "__main__":
     import uvicorn
@@ -187,5 +201,5 @@ if __name__ == "__main__":
         "app.main:app",
         host=os.getenv("APP_HOST", "0.0.0.0"),
         port=int(os.getenv("APP_PORT", 8000)),
-        reload=True,
+        reload=False,
     )
