@@ -3,8 +3,10 @@ TAIA Audit Logger - Phase 3
 Logs every request to a SQLite database.
 """
 import os
+from pathlib import Path
 from datetime import datetime
 from sqlalchemy import create_engine, Column, String, Float, Integer, DateTime, Text
+from sqlalchemy.engine import make_url
 from sqlalchemy.orm import DeclarativeBase, sessionmaker
 
 # --- Database Setup
@@ -12,7 +14,25 @@ from sqlalchemy.orm import DeclarativeBase, sessionmaker
 DB_PATH = ".audit.db"
 DB_URL  = os.getenv("DATABASE_URL", f"sqlite:///{DB_PATH}")
 
-engine       = create_engine(DB_URL, echo=False, connect_args={"check_same_thread": False})
+
+def _normalize_db_url(url: str) -> str:
+    """Ensure SQLite database directories exist before the engine is created."""
+    parsed = make_url(url)
+    if parsed.drivername != "sqlite" or not parsed.database:
+        return url
+
+    db_path = Path(parsed.database)
+    if not db_path.is_absolute():
+        db_path = (Path.cwd() / db_path).resolve()
+    else:
+        db_path = db_path.resolve()
+
+    db_path.parent.mkdir(parents=True, exist_ok=True)
+    return f"sqlite:///{db_path.as_posix()}"
+
+
+DB_URL = _normalize_db_url(DB_URL)
+engine = create_engine(DB_URL, echo=False, connect_args={"check_same_thread": False})
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 class Base(DeclarativeBase):
