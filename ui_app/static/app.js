@@ -1,5 +1,5 @@
 // TAIA Chat Application
-const API = '';
+const API = 'http://localhost:8000';
 let token = null;
 let sessionId = null;
 let currentRole = 'student';
@@ -64,7 +64,7 @@ function updateDefaultId() {
 }
 // Theme Management
 function initTheme() {
-    const savedTheme = localStorage.getItem('theme') || 'dark';
+    const savedTheme = localStorage.getItem('theme') || 'light';
     document.documentElement.setAttribute('data-theme', savedTheme);
     updateThemeIcon(savedTheme);
 }
@@ -116,7 +116,7 @@ async function login() {
     if (errDiv) errDiv.style.display = 'none';
 
     try {
-        const r = await fetch(`${API}/api/v1/auth/login`, {
+        const r = await fetch(`http://localhost:8001/api/v1/auth/login`, {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({user_id: userId, role: role}),
