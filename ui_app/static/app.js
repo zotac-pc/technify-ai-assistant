@@ -1,5 +1,5 @@
 // TAIA Chat Application
-const API = '';
+const API = 'http://localhost:8000';
 let token = null;
 let sessionId = null;
 let currentRole = 'student';
@@ -64,7 +64,7 @@ function updateDefaultId() {
 }
 // Theme Management
 function initTheme() {
-    const savedTheme = localStorage.getItem('theme') || 'dark';
+    const savedTheme = localStorage.getItem('theme') || 'light';
     document.documentElement.setAttribute('data-theme', savedTheme);
     updateThemeIcon(savedTheme);
 }
