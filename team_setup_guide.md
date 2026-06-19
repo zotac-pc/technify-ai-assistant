@@ -20,8 +20,9 @@ Before pulling the code, ensure your system has the following installed:
 
 ---
 
-## 2. Getting Started (Git Pull)
+## 2. Getting Started
 
+### For New Members (Fresh Install)
 Open your terminal and run the following commands to get the code and install the Python dependencies:
 
 ```bash
