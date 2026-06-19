@@ -20,8 +20,9 @@ Before pulling the code, ensure your system has the following installed:
 
 ---
 
-## 2. Getting Started (Git Pull)
+## 2. Getting Started
 
+### For New Members (Fresh Install)
 Open your terminal and run the following commands to get the code and install the Python dependencies:
 
 ```bash
@@ -47,7 +48,18 @@ python scripts/generate_data.py
 python scripts/ingest_documents.py
 ```
 
-Create a `.env` file in the root directory with the following variables. (Your team can copy-paste exactly this, just replace the API key):
+### For Existing Members (Updating)
+If you already have the code and just need to pull the latest updates (like the new Admin Dashboard), run:
+```bash
+git checkout main
+git pull origin main
+# Always re-run requirements in case new packages were added!
+pip install -r requirements.txt
+```
+
+### Environment Variables (.env)
+Create a `.env` file in the root directory with the following variables. (Your team can copy-paste exactly this, just replace the API key). 
+*(Note: You can leave `JWT_SECRET_KEY` exactly as it is for local testing. It only needs to be changed to a random string on a real production server).*
 ```env
 LLM_API_KEY=sk-or-v1-your-openrouter-key-here
 LLM_BASE_URL=https://openrouter.ai/api/v1
