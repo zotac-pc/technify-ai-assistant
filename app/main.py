@@ -184,12 +184,12 @@ async def startup_event():
 
 from app.services.audit_logger import get_recent_logs, get_stats as get_audit_stats
 
-@app.get('/api/v1/admin/audit-logs', tags=['Admin Reports'])
+@app.get('/api/v1/admin/audit-logs', tags=['Admin Reports'], dependencies=[Depends(allow_only_admin)])
 async def audit_logs(limit: int = 50):
     """Return recent audit log entries from the database."""
-    return {'logs': get_recent_logs(limit=limit)}
+    return get_recent_logs(limit=limit)
 
-@app.get('/api/v1/admin/usage-stats', tags=['Admin Reports'])
+@app.get('/api/v1/admin/usage-stats', tags=['Admin Reports'], dependencies=[Depends(allow_only_admin)])
 async def usage_stats():
     """Return overall usage statistics."""
     return get_audit_stats()
@@ -200,5 +200,5 @@ if __name__ == "__main__":
         "app.main:app",
         host=os.getenv("APP_HOST", "0.0.0.0"),
         port=int(os.getenv("APP_PORT", 8000)),
-        reload=True,
+        reload=False,
     )

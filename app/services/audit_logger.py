@@ -1,6 +1,6 @@
 """
 TAIA Audit Logger - Phase 3
-Logs every request to a SQLite database (upgradeable to PostgreSQL).
+Logs every request to a SQLite database.
 """
 import os
 from datetime import datetime
@@ -8,19 +8,15 @@ from sqlalchemy import create_engine, Column, String, Float, Integer, DateTime, 
 from sqlalchemy.orm import DeclarativeBase, sessionmaker
 
 # --- Database Setup
-LOG_DIR = os.path.join(os.path.dirname(__file__), '..', '..', 'logs')
-DB_PATH = os.path.join(LOG_DIR, 'audit.db')
+# Using hidden file in root directory to prevent uvicorn auto-reload bugs
+DB_PATH = ".audit.db"
 DB_URL  = os.getenv("DATABASE_URL", f"sqlite:///{DB_PATH}")
-
-os.makedirs(LOG_DIR, exist_ok=True)
 
 engine       = create_engine(DB_URL, echo=False, connect_args={"check_same_thread": False})
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
-
 class Base(DeclarativeBase):
     pass
-
 
 class AuditLog(Base):
     """Database model for audit logs."""
@@ -35,24 +31,14 @@ class AuditLog(Base):
     response_time = Column(Float,      nullable=False)
     auth_mode     = Column(String(20), default="header")
 
-
 # Create tables on startup
 Base.metadata.create_all(bind=engine)
-
 
 def log_request(user_id: str, role: str, query: str,
                 response_type: str, response_time: float,
                 auth_mode: str = "header") -> None:
     """
     Log a single chat request to the audit database.
-
-    Args:
-        user_id:       The user's ID (e.g. STU-0001)
-        role:          The user's role (Student, Faculty, Admin)
-        query:         The raw message sent by the user
-        response_type: The classified intent (e.g. 'attendance')
-        response_time: How long the full response took in seconds
-        auth_mode:     'jwt' or 'header'
     """
     db = SessionLocal()
     try:
@@ -73,7 +59,6 @@ def log_request(user_id: str, role: str, query: str,
     finally:
         db.close()
 
-
 def get_recent_logs(limit: int = 50) -> list:
     """
     Retrieve the most recent audit log entries.
@@ -92,15 +77,14 @@ def get_recent_logs(limit: int = 50) -> list:
                 "user_id":       r.user_id,
                 "role":          r.role,
                 "query":         r.query,
-                "response_type": r.response_type,
-                "response_time": r.response_time,
+                "intent":        r.response_type,
+                "latency":       r.response_time,
                 "auth_mode":     r.auth_mode,
             }
             for r in rows
         ]
     finally:
         db.close()
-
 
 def get_stats() -> dict:
     """
