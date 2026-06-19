@@ -47,15 +47,19 @@ python scripts/generate_data.py
 python scripts/ingest_documents.py
 ```
 
-Create a `.env` file in the root directory with the following variables:
+Create a `.env` file in the root directory with the following variables. (Your team can copy-paste exactly this, just replace the API key):
 ```env
-LLM_API_KEY=your_openrouter_or_groq_api_key
+LLM_API_KEY=sk-or-v1-your-openrouter-key-here
 LLM_BASE_URL=https://openrouter.ai/api/v1
 LLM_MODEL=openrouter/free
 APP_HOST=0.0.0.0
 APP_PORT=8000
 ERP_API_BASE_URL=http://localhost:8001/api/v1
 CORS_ORIGINS=http://localhost:3000,http://localhost:5000,http://localhost:8080
+JWT_SECRET_KEY=taia-super-secret-key-change-in-production
+JWT_ALGORITHM=HS256
+REDIS_URL=redis://localhost:6379/0
+DATABASE_URL=sqlite:///./logs/audit.db
 ```
 
 ---
@@ -95,12 +99,14 @@ For the final production deployment, we use `docker-compose` to spin up everythi
    ```bash
    docker-compose up --build -d
    ```
+   *(Note: The `--build` flag only takes a long time the very first time it downloads Python and installs requirements. On future runs, Docker caches everything instantly. You can also drop the `--build` flag on future runs.)*
 4. The system will pull the Redis image, build the FastAPI Gateway with Gunicorn, and start the Mock ERP.
-5. You can view the live logs at any time by running:
+5. **Database:** You do not need to manually create the `.audit.db` file. The FastAPI application will automatically create it in the `logs/` folder the moment you start the server!
+6. You can view the live logs at any time by running:
    ```bash
    docker-compose logs -f
    ```
-6. To shut down the production environment:
+7. To shut down the production environment:
    ```bash
    docker-compose down
    ```
