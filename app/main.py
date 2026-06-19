@@ -116,7 +116,27 @@ from app.chains.chatbot_chain import (
 from app.services.erp_connector import *
 from app.services.study_planner import generate_study_plan
 from app.services.knowledge_base import query_knowledge_base
-from app.services.audit_logger import log_request
+from app.services.audit_logger import log_request, SessionLocal, AuditLog
+from sqlalchemy import func
+
+@app.get("/api/v1/admin/audit-logs", tags=["Admin Reports"], dependencies=[Depends(allow_only_admin)])
+async def get_audit_logs(limit: int = 50):
+    db = SessionLocal()
+    try:
+        logs = db.query(AuditLog).order_by(AuditLog.timestamp.desc()).limit(limit).all()
+        return [{"id": l.id, "timestamp": l.timestamp, "user_id": l.user_id, "role": l.role, "intent": l.response_type, "latency": l.response_time} for l in logs]
+    finally:
+        db.close()
+
+@app.get("/api/v1/admin/usage-stats", tags=["Admin Reports"], dependencies=[Depends(allow_only_admin)])
+async def get_usage_stats():
+    db = SessionLocal()
+    try:
+        total = db.query(AuditLog).count()
+        avg_time = db.query(func.avg(AuditLog.response_time)).scalar() or 0
+        return {"total_queries": total, "average_response_time": round(avg_time, 2)}
+    finally:
+        db.close()
 
 # ========== Chat Endpoint ==========
 
@@ -187,5 +207,5 @@ if __name__ == "__main__":
         "app.main:app",
         host=os.getenv("APP_HOST", "0.0.0.0"),
         port=int(os.getenv("APP_PORT", 8000)),
-        reload=True,
+        reload=False,
     )
