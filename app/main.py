@@ -159,9 +159,9 @@ async def chat(request: Request, message: dict, user_data: dict = Depends(verify
         elif intent == 'policy'     : erp_data = query_knowledge_base(user_msg)
         
         # ■■ Faculty intents ■■
-        elif intent == 'faculty_attendance': erp_data = json.dumps(await get_faculty_courses(uid))
+        elif intent == 'faculty_attendance': erp_data = json.dumps(await get_all_faculty_attendance(uid))
         elif intent == 'faculty_ungraded'  : erp_data = json.dumps(await get_faculty_assignments(uid))
-        elif intent == 'faculty_at_risk'   : erp_data = json.dumps(await get_faculty_courses(uid))
+        elif intent == 'faculty_at_risk'   : erp_data = json.dumps(await get_all_faculty_at_risk(uid))
         
         # ■■ Admin intents — use actual erp_connector function names ■■
         elif intent == 'admin_students'   : erp_data = json.dumps(await get_admin_student_stats())
