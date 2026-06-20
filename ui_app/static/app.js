@@ -131,6 +131,8 @@ async function login() {
         token = data.token;
         currentRole = role;
         sessionId = 'sess_' + Date.now();
+        localStorage.setItem('taia_jwt', token);
+        localStorage.setItem('taia_role', role);
 
         // Update UI
         document.getElementById('loginSection').style.display = 'none';
@@ -187,6 +189,8 @@ async function login() {
 
 function logout() {
     token = null; sessionId = null;
+    localStorage.removeItem('taia_jwt');
+    localStorage.removeItem('taia_role');
     document.getElementById('loginSection').style.display = 'block';
     document.getElementById('userInfo').style.display = 'none';
     document.getElementById('quickQuestions').style.display = 'none';
