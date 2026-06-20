@@ -153,8 +153,8 @@ We have built a dedicated **Admin Dashboard** directly into the frontend!
 
 **To authenticate and view the dashboard:**
 1. Open the Chat UI (`http://127.0.0.1:5000`).
-2. Use the Dev Fallback to set your role to **Admin**.
-3. Click the red **🛡️ Admin Dashboard** button in the sidebar.
-4. The dashboard will automatically fetch and display all queries, latencies, and intents in a professional UI!
+2. Login to the main dashboard as an **Admin** using the sidebar (e.g., User ID: `ADM-0001`, Role: `Admin`).
+3. Click the red **🛡️ Admin Dashboard** button.
+4. The dashboard will automatically read your session token and display all queries securely in a professional UI!
 
 *(If you are building external integrations, the raw JSON data is also fully accessible via `GET http://127.0.0.1:8000/api/v1/admin/audit-logs` by passing an Admin JWT or `x-user-role: Admin` header).*
