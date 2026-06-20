@@ -103,25 +103,21 @@
         <!-- Sidebar -->
         <aside class="sidebar">
             <div class="sidebar-top">
-                <div class="login-section">
-                    <h3 style="font-size: 14px; margin-bottom: 10px; color: var(--text-secondary);"><i class="fas fa-key"></i> Authentication</h3>
-                    <div class="form-group">
-                        <input type="text" id="tokenInput" placeholder="Paste Admin JWT Here..." />
+                <div class="user-info" id="adminInfo" style="margin-top: 15px;">
+                    <div class="avatar" style="background-color: #ef4444; color: white; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; margin-bottom: 10px;">
+                        A
                     </div>
-                    <button onclick="saveToken()" class="btn-login">Save Token</button>
+                    <div class="details">
+                        <div class="name" style="color: var(--text-primary); font-weight: 500;">Admin User</div>
+                        <div class="badge" style="display: inline-block; background-color: #ef4444; color: white; padding: 2px 8px; border-radius: 12px; font-size: 11px; margin-top: 5px;">Admin</div>
+                    </div>
                 </div>
                 
-                <div class="login-section" style="margin-top: 15px;">
-                    <p style="font-size: 12px; margin-bottom: 8px; color: var(--text-secondary);"><i class="fas fa-tools"></i> Dev Fallback:</p>
-                    <div class="form-group">
-                        <select id="roleSelect">
-                            <option value="Admin" selected>Admin</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <input type="text" id="userIdInput" value="ADM-0001">
-                    </div>
-                </div>
+                <script>
+                    if (!localStorage.getItem('taia_role') || localStorage.getItem('taia_role').toLowerCase() !== 'admin') {
+                        document.getElementById('adminInfo').style.display = 'none';
+                    }
+                </script>
             </div>
             
             <div class="sidebar-bottom">
