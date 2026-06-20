@@ -141,56 +141,59 @@ async def generate_chat_response(session_id: str, user_message: str) -> str:
 
 # ── Step 6: Intent classifier ─────────────────────────────────────────────────
 
-def classify_intent(message: str, role: str = 'Student') -> str:
+async def classify_intent_async(session_id: str, message: str, role: str = 'Student') -> str:
     """
-    Map a user message to a named intent string.
+    Use an LLM to classify the user's intent based on the message and conversation history.
     Used by main.py to decide which ERP endpoint to call before LLM.
     """
-    msg = message.lower()
+    try:
+        llm = get_chatbot_chain(session_id)
+        messages, _ = _get_history(session_id)
+        
+        # Extract the last 3 user/AI exchanges to provide context
+        recent_history = []
+        for msg in messages[-6:]:
+            if isinstance(msg, HumanMessage):
+                recent_history.append(f"User: {msg.content}")
+            elif isinstance(msg, AIMessage):
+                recent_history.append(f"AI: {msg.content}")
+                
+        history_text = "\n".join(recent_history)
+        
+        # Define valid intents based on role
+        if role.lower() == 'faculty':
+            valid_list = ['faculty_attendance', 'faculty_ungraded', 'faculty_at_risk', 'faculty_stats', 'general']
+        elif role.lower() == 'admin':
+            valid_list = ['admin_students', 'admin_admissions', 'admin_fees', 'admin_departments', 'general']
+        else:
+            valid_list = ['attendance', 'results', 'courses', 'timetable', 'fees', 'assignments', 'exams', 'study_plan', 'policy', 'general']
+        
+        prompt = f"""You are an Intent Classifier for a University ERP AI Assistant.
+The user is a {role}.
+Your task is to classify the user's latest message into EXACTLY ONE of the following intents:
+{valid_list}
 
-    # ── Student intents ──
-    if any(w in msg for w in ['attendance', 'absent', 'present']):
-        return 'attendance'
-    if any(w in msg for w in ['result', 'marks', 'grade', 'gpa', 'cgpa']):
-        return 'results'
-    if any(w in msg for w in ['course', 'registered', 'enrolled']):
-        return 'courses'
-    if any(w in msg for w in ['timetable', 'schedule', 'class time']):
-        return 'timetable'
-    if any(w in msg for w in ['fee', 'dues', 'payment', 'tuition']):
-        return 'fees'
-    if any(w in msg for w in ['assignment', 'homework', 'pending', 'due']):
-        return 'assignments'
-    if any(w in msg for w in ['study plan', 'prepare', 'how to study', 'weak']):
-        return 'study_plan'
-    if any(w in msg for w in ['exam', 'test', 'quiz', 'when is']):
-        return 'exams'
-    if any(w in msg for w in ['policy', 'rule', 'regulation', 'calendar']):
-        return 'policy'
+Recent Conversation History:
+{history_text}
 
-    # ── Faculty intents ──
-    if role == 'Faculty':
-        if any(w in msg for w in ['low attendance', 'absent']):
-            return 'faculty_attendance'
-        if any(w in msg for w in ['ungraded', 'not graded']):
-            return 'faculty_ungraded'
-        if any(w in msg for w in ['at risk', 'failing', 'weak']):
-            return 'faculty_at_risk'
-        if any(w in msg for w in ['performance', 'stats']):
-            return 'faculty_stats'
+Latest User Message: {message}
 
-    # ── Admin intents ──
-    if role == 'Admin':
-        if any(w in msg for w in ['total student', 'enrollment']):
-            return 'admin_students'
-        if any(w in msg for w in ['admission', 'intake']):
-            return 'admin_admissions'
-        if any(w in msg for w in ['fee', 'collection', 'revenue']):
-            return 'admin_fees'
-        if any(w in msg for w in ['department', 'performance']):
-            return 'admin_departments'
+Rules:
+1. Output ONLY the exact intent string from the list above. Do not output quotes or extra text.
+2. If the user asks a follow-up (e.g. "what about Database Systems?"), look at the history. If they were just asking about attendance, the intent is 'attendance'.
+3. If no intent matches, output 'general'.
 
-    return 'general'
+Intent:"""
+
+        response = await llm.ainvoke([HumanMessage(content=prompt)])
+        intent = response.content.strip().strip("'\"").lower()
+        
+        if intent not in valid_list:
+            return 'general'
+        return intent
+    except Exception as e:
+        print(f"Intent Classification Error: {e}")
+        return 'general'
 
 
 # ── Step 7: Contextual response with ERP data ─────────────────────────────────
