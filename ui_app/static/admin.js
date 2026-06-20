@@ -1,21 +1,9 @@
-let jwtToken = localStorage.getItem('taia_admin_token') || "";
+let jwtToken = localStorage.getItem('taia_jwt') || "";
+let userRole = localStorage.getItem('taia_role') || "";
 
 window.onload = function() {
-    if (jwtToken) {
-        document.getElementById('tokenInput').value = jwtToken;
-    }
     fetchLogs();
 };
-
-function saveToken() {
-    const token = document.getElementById('tokenInput').value.trim();
-    if (token) {
-        jwtToken = token;
-        localStorage.setItem('taia_admin_token', token);
-        alert('Admin Token saved securely!');
-        fetchLogs();
-    }
-}
 
 async function fetchLogs() {
     const tbody = document.getElementById('logsTableBody');
@@ -25,9 +13,12 @@ async function fetchLogs() {
     const headers = {};
     if (jwtToken) {
         headers['Authorization'] = `Bearer ${jwtToken}`;
+    } else if (userRole.toLowerCase() === 'admin') {
+        headers['x-user-role'] = 'Admin';
+        headers['x-user-id'] = 'ADM-0001';
     } else {
-        headers['x-user-role'] = document.getElementById('roleSelect').value;
-        headers['x-user-id'] = document.getElementById('userIdInput').value;
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #ef4444;">Please login as an Admin in the main Chat UI first.</td></tr>`;
+        return;
     }
 
     try {
