@@ -123,7 +123,7 @@ async def get_fee_report():
 
 
 from app.chains.chatbot_chain import (
-    generate_chat_response, generate_contextual_response, classify_intent)
+    generate_chat_response, generate_contextual_response, classify_intent_async)
 from app.services.erp_connector import *
 from app.services.study_planner import generate_study_plan
 from app.services.knowledge_base import query_knowledge_base
@@ -141,7 +141,7 @@ async def chat(request: Request, message: dict, user_data: dict = Depends(verify
     
     if not user_msg: return {'response': 'Please provide a message.'}
     start    = time.time()
-    intent   = classify_intent(user_msg, role)
+    intent   = await classify_intent_async(session, user_msg, role)
     erp_data = ''
     
     try:
