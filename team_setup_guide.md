@@ -123,6 +123,21 @@ For the final production deployment, we use `docker-compose` to spin up everythi
    docker-compose down
    ```
 
+### 4.1. Fast Deployment using Pre-Built Docker Images (For Team Members)
+If the project lead has pushed the images to a Docker Registry (like Docker Hub), you can skip building entirely!
+This avoids downloading massive Python libraries on your machine.
+
+**Steps:**
+1. Clone the repository to your machine.
+2. Make a copy of `.env.example` and rename it exactly to `.env`. Fill in the API keys.
+3. Ensure Docker Desktop is running.
+4. Run the following command in the project folder:
+   ```bash
+   docker-compose pull
+   docker-compose up -d
+   ```
+*The `docker-compose.yml` file will safely read your local `.env` file on your computer and inject the variables into the containers in real-time. Your `.env` file is completely secure and is never uploaded anywhere!*
+
 ---
 
 ## 5. Using the UI & Authentication
