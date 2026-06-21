@@ -43,9 +43,10 @@ class TAIAChain:
         self.chat_history = []  # Stores conversation history
 
         self.llm = ChatOpenAI(
-            model=os.getenv("LLM_MODEL", "gpt-4o-mini"),
+            model=os.getenv("LLM_MODEL", "llama-3.3-70b-versatile"),
             temperature=float(os.getenv("LLM_TEMPERATURE", 0.3)),
-            api_key=os.getenv("OPENAI_API_KEY")
+            api_key=os.getenv("LLM_API_KEY"),
+            base_url=os.getenv("LLM_BASE_URL", "https://api.groq.com/openai/v1")
         )
 
         self.prompt = ChatPromptTemplate.from_messages([
