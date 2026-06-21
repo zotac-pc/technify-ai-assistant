@@ -21,7 +21,7 @@ TAIA is an intelligent chatbot microservice that integrates with the Technify Un
 | FastAPI | Web framework |
 | LangChain | LLM orchestration |
 | ChromaDB | Vector database for RAG |
-| OpenAI GPT / Llama | LLM backbone |
+| Groq / Llama 3.3 | LLM backbone |
 | JWT | Authentication |
 
 ## 📁 Project Structure
