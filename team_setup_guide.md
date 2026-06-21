@@ -60,10 +60,11 @@ pip install -r requirements.txt
 ### Environment Variables (.env)
 Create a `.env` file in the root directory with the following variables. (Your team can copy-paste exactly this, just replace the API key).
 *(Note: You can leave `JWT_SECRET_KEY` exactly as it is for local testing. It only needs to be changed to a random string on a real production server).*
+*(Get a free Groq API key from [console.groq.com](https://console.groq.com/))*
 ```env
-LLM_API_KEY=sk-or-v1-your-openrouter-key-here
-LLM_BASE_URL=https://openrouter.ai/api/v1
-LLM_MODEL=openrouter/free
+LLM_API_KEY=gsk_your-groq-api-key-here
+LLM_BASE_URL=https://api.groq.com/openai/v1
+LLM_MODEL=llama-3.3-70b-versatile
 APP_HOST=0.0.0.0
 APP_PORT=8000
 ERP_API_BASE_URL=http://localhost:8001/api/v1
